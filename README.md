@@ -38,3 +38,19 @@ http://passportjs.org
 > npm instal --save passport-facebook
 
 
+Creamos un modelo usuario /models/user.js donde indicaremos que datos vamos a querer almacenar en la base de datos para nuestros usuarios. En este ejemplo vamos a salvar el nombre, el proveedor, un ID, la foto del usuario y un campo dónde almacenaremos la fecha en la que el usuario se registró en nuestra aplicación.
+
+```
+var mongose = require('mongose');
+var Schema = mongose.Schema;
+
+var UserSchema = new Schema({
+	name: String,
+	provider: String,
+	provider_id: {type: String, unique: true},
+	photo: String,
+	createdAt: {type: Date, default: Date.now}
+});
+
+var User = mongose.model('User', UserSchema);
+```
