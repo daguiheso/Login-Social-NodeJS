@@ -54,3 +54,70 @@ var UserSchema = new Schema({
 
 var User = mongose.model('User', UserSchema);
 ```
+
+Configuramos Passport /passport.js* importando las librerías que utilizamos y las funciones que nos permiten el login.
+
+Con seriealizeUser y deserializeUser logramos que el objeto usuario quede almacenado en la sesión de la aplicación y asi poder utilizarlo a lo largo de ella.
+
+Con TwitterStrategy y FacebookStrategy utilizamos las estrategias de autenticación que nos proporciona Passport, les pasamos como parámetros los API Key y API secret que nos dan las plataformas cuando registramos una aplicación en ellas, y nos devuelven varios objetos, entre ellos el objeto profile que contiene toda la información del usuario que devuelve Twitter o Facebook y del que podemos sacar los atributos que queramos para nuestra aplicación (nombre, ID, foto, etc..)
+
+```
+var mongose = require('mongose');
+var User = mongose.model('User');
+var TwitterStrategy = require('passport-twitter').Strategy;
+var FacebookStrategy = require('passport-facebook').Strategy;
+var config = require('./config');
+
+module.exports = function (passport) {
+	passport.serializeUser(function (user, done) {
+		done(null, user);
+	});
+
+	passport.deserializeUser(function(obj, done) {
+		done(null, obj);
+	});
+
+	passport.use(new TwitterStrategy({
+		consumerKey		 : config.twitter.key,
+		consumerSecret	: config.twitter.secret,
+		callbackURL		 : '/auth/twitter/callback'
+	}, function(accessToken, refreshToken, profile, done) {
+		User.findOne({provider_id: profile.id}, function(err, user) {
+			if(err) throw(err);
+			if(!err && user!= null) return done(null, user);
+			var user = new User({
+				provider_id	: profile.id,
+				provider		 : profile.provider,
+				name				 : profile.displayName,
+				photo				: profile.photos[0].value
+			});
+			user.save(function(err) {
+				if(err) throw err;
+				done(null, user);
+			});
+		});
+	}));
+
+	passport.use(new FacebookStrategy({
+		clientID			: config.facebook.key,
+		clientSecret	: config.facebook.secret,
+		callbackURL	 : '/auth/facebook/callback',
+		profileFields : ['id', 'displayName', /*'provider',*/ 'photos']
+	}, function(accessToken, refreshToken, profile, done) {
+		User.findOne({provider_id: profile.id}, function(err, user) {
+			if(err) throw(err);
+			if(!err && user!= null) return done(null, user);
+			var user = new User({
+				provider_id	: profile.id,
+				provider		 : profile.provider,
+				name				 : profile.displayName,
+				photo				: profile.photos[0].value
+			});
+			user.save(function(err) {
+				if(err) throw err;
+				done(null, user);
+			});
+		});
+	}));
+};
+```
