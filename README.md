@@ -121,3 +121,21 @@ module.exports = function (passport) {
 	}));
 };
 ```
+
+Una buena práctica es mantener las API Keys separadas del código fuente que subimos al repositorio, en un archivo config.js (o en las variables de entorno) que luego importamos desde donde lo necesitemos.
+
+```
+var config = {
+	twitter: {
+		key: TWITTER_API_KEY,
+		secret: TWITTER_API_SECRET
+	},
+	facebook: {
+		id: FACEBOOK_API_ID,
+		secret: FACEBOOK_APP_SECRET
+	}
+};
+
+module.exports = config;
+```
+
